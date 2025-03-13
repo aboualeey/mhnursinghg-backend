@@ -1,17 +1,36 @@
 const express = require('express');
 const nodemailer = require('nodemailer');
 const cors = require('cors');
-const app = express();
-const port = process.env.PORT || 5000; // Render assigns PORT
+require('dotenv').config();
 
-app.use(cors({ origin: 'https://mhnursinghomes.co.uk' }));
+const app = express();
+const port = process.env.PORT || 5000;
+
+// Allow multiple origins
+const allowedOrigins = [
+  'https://mhnursinghomes.co.uk',
+  'http://localhost:3000'
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['POST', 'OPTIONS'], // Explicitly allow POST and preflight OPTIONS
+  allowedHeaders: ['Content-Type']
+}));
+
 app.use(express.json());
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: process.env.EMAIL_USER, // Use env variable
-    pass: process.env.EMAIL_PASS, // Use env variable
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
   },
 });
 
@@ -27,7 +46,7 @@ app.post('/api/send-email', async (req, res) => {
 
   const mailOptions = {
     from: email,
-    to: process.env.EMAIL_USER, // Same as sender for simplicity
+    to: process.env.EMAIL_USER,
     subject: `New Contact Form Submission from ${name}`,
     text: `Name: ${name}\nEmail: ${email}\nMessage: ${message}`,
   };
