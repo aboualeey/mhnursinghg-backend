@@ -6,7 +6,6 @@ require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 5000;
 
-// Allow multiple origins
 const allowedOrigins = [
   'https://mhnursinghomes.co.uk',
   'http://localhost:3000'
@@ -14,25 +13,16 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: (origin, callback) => {
+    console.log('Request origin:', origin); // Debug log
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
     }
   },
-  methods: ['POST', 'OPTIONS'], // Explicitly allow POST and preflight OPTIONS
+  methods: ['POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type']
 }));
-app.use(cors({
-    origin: (origin, callback) => {
-      console.log('Request origin:', origin);
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
-  }));
 
 app.use(express.json());
 
@@ -51,7 +41,6 @@ transporter.verify((error, success) => {
 
 app.post('/api/send-email', async (req, res) => {
   const { name, email, message } = req.body;
-
   console.log('Received form data:', { name, email, message });
 
   const mailOptions = {
